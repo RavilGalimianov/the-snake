@@ -1,7 +1,7 @@
+import random
 from random import randint
 
 import pygame as pg
-import random
 
 # Константы для размеров поля и сетки:
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
@@ -171,7 +171,9 @@ def handle_keys(game_object):
     global speed
 
     for event in pg.event.get():
-        if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+        if event.type == pg.QUIT or (
+            event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE
+        ):
             return False
         if event.type == pg.KEYDOWN:
             current_state = (game_object.direction, event.key)
