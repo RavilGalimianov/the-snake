@@ -154,6 +154,12 @@ class Snake(GameObject):
         # Добавляем новую голову в начало списка
         self.positions.insert(0, self.position)
 
+        # Если яблоко не съедено, удаляем лишний элемент с хвоста
+        if len(self.positions) > self.length:
+            self.last = self.positions.pop()
+        else:
+            self.last = None  # Хвост не удаляем, змейка растет
+
 
 # Функция обработки нажатия клавиш
 def handle_keys(game_object):
@@ -204,23 +210,15 @@ def main():
         snake.move()
 
         # Проверяем столкновение с телом ДО добавления новой головы
-        if snake.get_head_position() in snake.positions[3:]:
+        if snake.get_head_position() in snake.positions[4:]:
             snake.reset()
             apple.randomize_position(snake.positions)
             screen.fill(BOARD_BACKGROUND_COLOR)
 
         # Проверяем, съела ли змейка яблоко
-        if snake.get_head_position() == apple.position:
+        elif snake.get_head_position() == apple.position:
             snake.length += 1
             apple.randomize_position(snake.positions)
-            snake.last = None  # Хвост не удаляем, змейка растет
-
-        # Если яблоко не съедено, удаляем лишний элемент с хвоста
-        if len(snake.positions) > snake.length:
-            snake.last = snake.positions.pop()
-        else:
-            snake.last = None  # Хвост не удаляем, змейка растет
-
         apple.draw()
         snake.draw()
         pg.display.update()
