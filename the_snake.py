@@ -1,3 +1,4 @@
+import random
 from random import randint
 
 import pygame as pg
@@ -91,7 +92,6 @@ class Apple(GameObject):
         """Инициализирует яблоко и задает базовую позицию."""
         super().__init__(body_color=body_color)
         self.randomize_position(occupied_positions or [])
-        self.body_color = body_color
 
     def randomize_position(self, occupied_positions):
         """Генерирует случайные координаты вне тела змейки."""
@@ -114,6 +114,7 @@ class Snake(GameObject):
     def __init__(self, body_color=SNAKE_COLOR):
         super().__init__(body_color=body_color)
         self.reset()
+        self.direction = RIGHT
 
     def draw(self):
         """Отрисовывает тело змейки на экране."""
@@ -131,7 +132,7 @@ class Snake(GameObject):
         """Сбрасывает состояние змейки к начальному"""
         self.length = 1
         self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
-        self.direction = RIGHT
+        self.direction = random.choice([LEFT, RIGHT, UP, DOWN])
         self.next_direction = None
         self.last = None
 
@@ -141,12 +142,8 @@ class Snake(GameObject):
             self.direction = self.next_direction
             self.next_direction = None
 
-    def move(self, apple):
-        """Перемещает змейку.
-        Проверяет столкновение с собственным телом и поедание яблока.
-        """
-        self.update_direction()
-
+    def move(self):
+        """Перемещает змейку."""
         direction_x, direction_y = self.direction
         head_x_coordinate, head_y_coordinate = self.get_head_position()
         self.position = (
@@ -157,21 +154,8 @@ class Snake(GameObject):
         # Добавляем новую голову в начало списка
         self.positions.insert(0, self.position)
 
-        # Проверяем, съела ли змейка яблоко
-        if self.positions[0] == apple.position:
-            self.length += 1
-            apple.randomize_position(self.positions)
-            self.last = None  # Хвост не удаляем, змейка растет
-        else:
-            # Если яблоко не съедено, удаляем лишний элемент с хвоста
-            if len(self.positions) > self.length:
-                self.last = self.positions.pop()
-            else:
-                self.last = None
 
 # Функция обработки нажатия клавиш
-
-
 def handle_keys(game_object):
     """Обрабатывает нажатия клавиш клавиатуры для управления змейкой."""
     global speed
@@ -212,19 +196,30 @@ def main():
     snake = Snake(SNAKE_COLOR)
     apple = Apple(snake.positions, APPLE_COLOR)
 
-    screen.fill(BOARD_BACKGROUND_COLOR)
-
     while True:
         clock.tick(speed)
         if not handle_keys(snake):
             break
-        snake.move(apple)
+        snake.update_direction()
+        snake.move()
 
         # Проверяем столкновение с телом ДО добавления новой головы
-        if snake.get_head_position() in snake.positions[1:]:
+        if snake.get_head_position() in snake.positions[3:]:
             snake.reset()
             apple.randomize_position(snake.positions)
             screen.fill(BOARD_BACKGROUND_COLOR)
+
+        # Проверяем, съела ли змейка яблоко
+        if snake.get_head_position() == apple.position:
+            snake.length += 1
+            apple.randomize_position(snake.positions)
+            snake.last = None  # Хвост не удаляем, змейка растет
+
+        # Если яблоко не съедено, удаляем лишний элемент с хвоста
+        if len(snake.positions) > snake.length:
+            snake.last = snake.positions.pop()
+        else:
+            snake.last = None  # Хвост не удаляем, змейка растет
 
         apple.draw()
         snake.draw()
